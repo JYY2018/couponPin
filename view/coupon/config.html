@@ -1,0 +1,178 @@
+{extend name="./common/base" /}
+{block name="body"}
+ <form name="form2" class="layui-form" action="">
+<div class="layui-tab layui-tab-brief">
+  <ul class="layui-tab-title">
+    <li class="layui-this">参数设置</li>
+   
+  </ul>
+  
+  
+   
+        
+       <div class="layui-tab-content">
+  	<div class="layui-tab-item layui-show"> 
+        
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 100px;">多多进宝账号</label>
+            <div class="layui-input-inline" style="margin-right: 0;">
+                <input type="text" name="owner" value="{$data.owner|default=''}" id="owner" required lay-verify="required|phone" autocomplete="off" class="layui-input">
+                      
+            </div>
+            <button class="layui-btn layui-btn-primary"  onclick="hopen()" type="button">授权登陆</button>
+    
+             
+        </div>
+        
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 100px;">失效时间</label>
+            <div class="layui-input-inline">
+                <input type="text" name="otime" value="{$data.otime|default=''}" required lay-verify="required"  autocomplete="off"
+                       class="layui-input">
+                
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 100px;">PID</label>
+            <div class="layui-input-inline" style="margin-right: 0;">
+                <input type="text" name="pddpid" id="pddpid" value="{$data.pddpid|default=''}" required  autocomplete="off" class="layui-input">
+            </div><button class="layui-btn layui-btn-primary"  onclick="hapi(this);" type="button">获取多多进宝PID</button>
+        </div>
+        <div class="layui-form-item" pane>
+            <label class="layui-form-label" style="width: 100px;">访问限制</label>
+            <div class="layui-input-block">
+                <input type="radio" name="wxopen" value="0" title="不限制" {eq name="$data.wxopen|default=''" value="0"} checked {/eq}>
+                <input type="radio" name="wxopen" value="1" title="只能微信访问" {eq name="$data.wxopen|default=''" value="1"} checked {/eq}>
+                <p class="tip_for_p"></p>
+            </div>
+        </div>
+       </div>
+  	
+       
+       
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+ 
+    
+    
+    
+
+  	
+
+</div>
+   </form>
+<script>
+	function hopen(){
+			   window.open("http://jinbao.pinduoduo.com/open.html?response_type=code&client_id=2bad1d85f5b946e6b91aff706f632916&redirect_uri=http://auth.huiyuntk.cn/api/pddauth/auth/");  
+		   }
+	
+	function hapi(){
+			var pid =$("#pddpid").val();
+			var owner = $("#owner").val();
+			   if(owner == ""){
+				   layer.msg('请输入多多进宝账号');
+				   return;
+			   }else if(pid != ''){
+				   console.log(pid);
+				  
+				   layer.msg('无需获取,重新获取请先清空pid');
+				   return;
+			   }else{
+				   $.ajax({
+	    type : "post",
+	    url : "{:addonUrl('getpid')}/owner/"+owner,
+	    data : {
+	    	
+	    },
+        dataType : "json",		
+	    success : function(data) {
+			var c ='';
+			if(data.status==0){
+				$("#pddpid").val(data.pid);
+				layer.msg('获取成功');
+			}else{
+				c ='获取失败!';
+				layer.msg('获取失败!');
+			}
+	    		
+	    },
+	    error : function(xhr, type) {
+
+	    }
+	});
+			   }
+		
+		
+			   
+			   
+			   
+			   
+			   
+		   }
+	
+	
+    var layer;
+    layui.use('layer', function () {
+        var form = layui.form;
+        var layer = layui.layer;
+    });
+    layui.use(['laydate'], function(){
+        laydate = layui.laydate;
+        laydate.render({
+            elem: '#date_1'
+            ,type: 'datetime'
+        });
+        laydate.render({
+            elem: '#date_2'
+            ,type: 'datetime'
+        });
+    });
+
+    layui.use(['form', 'layer'], function () {
+        var form = layui.form;
+        var layer = layui.layer;
+        form.on('submit(formDemo)', function (data) {
+            var loadIndex = layer.load(1)
+            $.post('', $('.layui-form').serialize(), function (res) {
+                layer.close(loadIndex)
+                if (res.status == '0') {
+                    layer.alert(res.msg);
+                }
+                if (res.status == '1') {
+                    layer.msg(res.msg, {time: 1000}, function () {
+                        //location.href = "{:addonUrl('lists')}";
+                    });
+                }
+            }).error(function (error) {
+                layer.alert('500 Internal Server Error');
+                layer.close(loadIndex)
+            })
+            return false;
+        });
+    });
+    layui.use('element', function(){
+        var element = layui.element;
+    });
+    function getMaterial(paramName,type){
+        layer.open({
+            type: 2,
+            title: '选择素材',
+            shadeClose: true,
+            shade: 0.1,
+            area: ['750px', '480px'],
+            content: '{:getHostDomain()}{:url("mp/Material/getMeterial","","")}/type/'+type+'/param/'+paramName //iframe的url
+        });
+    }
+    function controllerByVal(value,paramName,type) {
+
+        $('.form_'+paramName).attr('src',value);
+        $("input[name="+paramName+"]").val(value);
+    }
+
+</script>
+{/block}
